@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { signUp, signIn, resetPass } = require("../controller/authController");
+const { signUp, signIn, forgotPass } = require("../controller/authController");
 const authenticate = require("../middleware/auth");
 const {
     viewSite,
@@ -18,6 +18,6 @@ router.post("/mySites/addSite", authenticate, addSite);
 router.post("/mySites/editSite", authenticate, editSite);
 router.post("/mySites/searchSite", authenticate, searchSector);
 router.get("/mySites/search", authenticate, search);
-router.post("/forgotPassword", resetPass);
+router.post("/forgotPassword", forgotPass);
 
 module.exports = router;
