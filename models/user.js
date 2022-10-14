@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt"); //one way hasing of password
 
+//Pre defined schema for sites
 const userSchema = new mongoose.Schema({
     mobileNum: {
         type: Number,
@@ -28,4 +29,5 @@ userSchema.pre("save", async function (next) {
     this.mPin = await bcrypt.hash(this.mPin, 8);
     next();
 });
+
 module.exports = mongoose.model("User", userSchema);

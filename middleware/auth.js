@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
-const user = require("../models/user");
+const jwt = require("jsonwebtoken"); //to verify token
 
+//function to authenticate the user to give access to necessary operation
 function authenticate(req, res, next) {
     const header = req.headers["authorization"];
     const token = header && header.split(" ")[1];
@@ -12,3 +12,5 @@ function authenticate(req, res, next) {
     console.log(req.user);
     next();
 }
+
+module.exports = authenticate;

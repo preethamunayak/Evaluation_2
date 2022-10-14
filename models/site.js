@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 
-const siteSchema = new mongoose.Schema({
+//Pre defined schema for sites
+let siteSchema = new mongoose.Schema({
+    mobileNum: { type: Number },
     url: { type: String, required: true },
     siteName: { type: String, required: true },
     sector: { type: String, required: true },
     userName: { type: String },
-    sitePass: { type: String, required: true },
-    notes: { type: String, required: true },
+    password: { type: String, required: true },
+    notes: { type: String },
 });
 
 module.exports = mongoose.model("Site", siteSchema);

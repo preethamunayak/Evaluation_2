@@ -1,6 +1,9 @@
-const bcrypt = require("bcrypt");
+require("dotenv").config();
+const bcrypt = require("bcrypt"); //used to hash mPin
+const jwt = require("jsonwebtoken"); //used to create token during signup
 const User = require("../models/user");
 
+//function for the signup of user
 const signUp = async (req, res) => {
     try {
         const user = await User.findOne({ mobileNum: req.body.mobileNum });
@@ -24,6 +27,7 @@ const signUp = async (req, res) => {
     }
 };
 
+// function for users sign in
 const signIn = async (req, res) => {
     try {
         const user = await User.findOne({ mobileNum: req.body.mobileNum });
@@ -33,8 +37,14 @@ const signIn = async (req, res) => {
                 req.body.mPin.toString(),
                 user.mPin
             );
+            //created access token with expiry of 7days
             if (result) {
-                res.json({ message: "Login successfull" });
+                const token = jwt.sign(
+                    { mobileNum: user.mobileNum },
+                    process.env.ACCESS_TOKEN_SECRET,
+                    { expiresIn: "7d" }
+                );
+                res.json({ token: token, message: "Login successfull" });
             } else {
                 res.json({ message: "Invalid credentials" });
             }
@@ -43,4 +53,5 @@ const signIn = async (req, res) => {
         res.json({ message: err.message });
     }
 };
+
 module.exports = { signUp, signIn };
