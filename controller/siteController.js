@@ -22,7 +22,7 @@ const viewSite = async (req, res) => {
             }
         ).clone();
     } catch (err) {
-        res.json({ message: err.message });
+        return res.json({ message: err.message });
     }
 };
 
@@ -46,34 +46,41 @@ let addSite = async (req, res) => {
             }
         });
     } catch (err) {
-        res.json({ message: err.message });
+        return res.json({ message: err.message });
     }
 };
 
 // function to edit Site
 const editSite = async (req, res) => {
     try {
-        await Site.find(
-            {
-                $and: [
-                    { mobileNum: req.user.mobileNum },
-                    { siteName: req.body.siteName },
-                    { userName: req.body.userName },
-                ],
-            },
-            { __v: 0 } /*projection*/,
-            function (err, documents) /*callback*/ {
+        const result = await Site.find(
+            { _id: req.body._id },
+            { __v: 0, mobileNum: 0 },
+            function (err) {
                 if (err) return res.sendStatus(401).send(err);
-                else return res.send(documents);
             }
         ).clone();
+        delete req.body._id;
+        delete req.body.mobileNum;
+        if (req.body.password) {
+            req.body.password = await cryptr.encrypt(req.body.password);
+        }
+        const data = await Site.findByIdAndUpdate(
+            { _id: result[0]._id },
+            req.body,
+            function (err) {
+                if (err) console.log(err);
+            }
+        ).clone();
+        data.password = cryptr.decrypt(data.password);
+        res.send(data);
     } catch (err) {
-        res.json({ message: err.message });
+        return res.json({ message: err.message });
     }
 };
 
 // function to search Site using sector
-const searchSite = async (req, res) => {
+const searchSector = async (req, res) => {
     try {
         let sector = req.body.sector;
         await Site.find(
@@ -92,8 +99,25 @@ const searchSite = async (req, res) => {
             }
         ).clone();
     } catch (err) {
-        res.json({ message: err.message });
+        return res.json({ message: err.message });
     }
 };
 
-module.exports = { viewSite, addSite, searchSite, editSite };
+const search = async (req, res) => {
+    try {
+        let search = req.query.search || req.body.search;
+        var regex = new RegExp(search, "i"); //case insensitive
+        await Site.find(
+            { mobileNum: req.user.mobileNum, $text: { $search: regex } },
+            (err, docs) => {
+                if (docs) {
+                    res.status(200).send({ docs });
+                } else res.send(err);
+            }
+        ).clone();
+    } catch (err) {
+        return res.json({ message: err.message });
+    }
+};
+
+module.exports = { viewSite, addSite, searchSector, editSite, search };

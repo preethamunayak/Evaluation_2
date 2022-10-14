@@ -54,4 +54,28 @@ const signIn = async (req, res) => {
     }
 };
 
-module.exports = { signUp, signIn };
+//function to reset password
+const resetPass = async (req, res) => {
+    try {
+        const user = await User.findOne({ mobileNum: req.body.mobileNum });
+        if (user) {
+            res.json({
+                message: "You have already registered. Please Sign-In.",
+            });
+        } else {
+            try {
+                User.create({
+                    mobileNum: req.body.mobileNum,
+                    mPin: req.body.mPin,
+                });
+                res.json({ message: "Created user" });
+            } catch (err) {
+                res.json({ message: "Invalid details" });
+            }
+        }
+    } catch (err) {
+        res.json({ message: err.message });
+    }
+};
+
+module.exports = { signUp, signIn, resetPass };

@@ -11,4 +11,5 @@ let siteSchema = new mongoose.Schema({
     notes: { type: String },
 });
 
+siteSchema.index({ "$**": "text" });
 module.exports = mongoose.model("Site", siteSchema);
