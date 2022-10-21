@@ -9,6 +9,7 @@ let siteSchema = new mongoose.Schema({
     userName: { type: String },
     password: { type: String, required: true },
     notes: { type: String },
+    image: { type: String, required: false },
 });
 
 siteSchema.index({ "$**": "text" });

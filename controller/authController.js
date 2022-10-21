@@ -39,6 +39,18 @@ const signIn = async (req, res) => {
             );
 
             if (result) {
+                // if (
+                //     await User.findOne(
+                //         { mobileNum: req.body.mobileNum },
+                //         { loggedIn: true }
+                //     )
+                // ) {
+                //     res.json({ message: "You have already logged" });
+                // }
+                await User.findOneAndUpdate(
+                    { mobileNum: req.body.mobileNum },
+                    { loggedIn: true }
+                );
                 //created access token with expiry of 1day
                 const accessToken = jwt.sign(
                     { mobileNum: user.mobileNum },
@@ -53,7 +65,7 @@ const signIn = async (req, res) => {
                 );
                 res.json({
                     AccessToken: accessToken,
-                    RefreshToken: refreshToken,
+                    // RefreshToken: refreshToken,
                     message: "Login successfull",
                 });
             } else {
@@ -65,7 +77,7 @@ const signIn = async (req, res) => {
     }
 };
 
-//function to forgot password//!not proper
+//function to forgot password
 let forgotPass = async (req, res) => {
     try {
         const user = await User.findOne({ mobileNum: req.body.mobileNum });
@@ -75,6 +87,12 @@ let forgotPass = async (req, res) => {
                     "You do not have a registered account. Please Sign up.",
             });
         } else {
+            const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
+            const newPass = await bcrypt.hash(req.body.mPin.toString(), salt);
+            await User.findOneAndUpdate(
+                { mobileNum: req.body.mobileNum },
+                { mPin: newPass }
+            );
             res.json({
                 message: "Password reset",
             });
@@ -84,4 +102,16 @@ let forgotPass = async (req, res) => {
     }
 };
 
-module.exports = { signUp, signIn, forgotPass };
+let logout = async (req, res) => {
+    try {
+        await User.findOneAndUpdate(
+            { mobileNum: req.body.mobileNum },
+            { loggedIn: false }
+        );
+        res.json({ message: "Logged out successfully" });
+    } catch (err) {
+        res.json({ message: err.message });
+    }
+};
+
+module.exports = { signUp, signIn, forgotPass, logout };
