@@ -2,6 +2,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt"); //used to hash mPin
 const jwt = require("jsonwebtoken"); //used to create token during signup
 const User = require("../models/user");
+const otp = require("../middleware/otpgenerator");
 
 //function for the signup of user
 const signUp = async (req, res) => {
@@ -77,6 +78,26 @@ const signIn = async (req, res) => {
     }
 };
 
+const sendOTP = async (req, res) => {
+    try {
+        const Otp = otp.generateOTP();
+        await User.findOneAndUpdate(
+            { mobileNum: req.body.mobileNum },
+            { otp: Otp }
+        );
+    } catch (err) {
+        res.json({ message: err.message });
+    }
+};
+
+let verifyNum = async (req, res) => {
+    try {
+        const user = await User.findOne({ mobileNum: req.body.mobileNum });
+        res.json({ user });
+    } catch (err) {
+        res.json({ message: err.message });
+    }
+};
 //function to forgot password
 let forgotPass = async (req, res) => {
     try {
@@ -102,6 +123,23 @@ let forgotPass = async (req, res) => {
     }
 };
 
+let resetPass = async (req, res) => {
+    try {
+        const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
+        const newMpin = await bcrypt.hash(req.body.mPin.toString(), salt);
+        if (req.user.mPin == newMpin) {
+            res.json({ message: "Your new mPin cannot be same as old!" });
+        } else {
+            await User.findOneAndUpdate({
+                mobileNum: req.user.mobileNum,
+                mPin: newMpin,
+            });
+            res.json({ message: "MPin changed successfully" });
+        }
+    } catch (error) {
+        res.json({ message: error });
+    }
+};
 let logout = async (req, res) => {
     try {
         await User.findOneAndUpdate(
@@ -114,4 +152,12 @@ let logout = async (req, res) => {
     }
 };
 
-module.exports = { signUp, signIn, forgotPass, logout };
+module.exports = {
+    signUp,
+    signIn,
+    forgotPass,
+    sendOTP,
+    resetPass,
+    logout,
+    verifyNum,
+};

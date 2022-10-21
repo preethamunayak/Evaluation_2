@@ -4,7 +4,10 @@ const {
     signUp,
     signIn,
     forgotPass,
+    resetPass,
     logout,
+    sendOTP,
+    verifyNum,
 } = require("../controller/authController");
 const authenticate = require("../middleware/auth");
 const {
@@ -35,7 +38,9 @@ router.post(
 router.patch("/mySites/editSite", authenticate, editSite);
 router.post("/mySites/searchSite", authenticate, searchSector);
 router.get("/mySites/search", authenticate, search);
-router.post("/forgotPassword", forgotPass);
+// router.post("/sendOTP", sendOTP);
+router.post("/forgotPassword", verifyNum /*, forgotPass*/);
+router.post("/resetPassword", authenticate, resetPass);
 router.post("/logout", authenticate, logout);
 
 module.exports = router;
