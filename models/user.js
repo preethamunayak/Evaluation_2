@@ -1,5 +1,7 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt"); //one way hasing of password
+const { string } = require("joi");
 
 //Pre defined schema for sites
 const userSchema = new mongoose.Schema({
@@ -23,10 +25,15 @@ const userSchema = new mongoose.Schema({
             message: (val) => `${val.value} has to be 4 digits`,
         },
     },
+
+    loggedIn: { type: Boolean, default: false, required: false },
+    otp: { type: String, required: false },
+    refToken: { type: String },
 });
 
 userSchema.pre("save", async function (next) {
-    this.mPin = await bcrypt.hash(this.mPin, 8);
+    const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
+    this.mPin = await bcrypt.hash(this.mPin, salt);
     next();
 });
 

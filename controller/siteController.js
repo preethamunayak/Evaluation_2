@@ -1,26 +1,14 @@
 const Site = require("../models/site");
+const multer = require("multer");
 const Cryptr = require("cryptr"); //used for encryption and decryption of site passwords
+
 const cryptr = new Cryptr("myTotallySecretKey");
 
 // function to view Site
-const viewSite = async (req, res) => {
+const viewSites = async (req, res) => {
     try {
-        let sector = req.body.sector;
-        await Site.find(
-            {
-                $and: [{ sector: sector }, { mobileNum: req.user.mobileNum }],
-            },
-            { __v: 0 },
-            function (err, documents) /*callback*/ {
-                if (err) return res.sendStatus(401).send(err);
-                else {
-                    if (documents.length == 0) {
-                        return res.send(`No sites in ${sector} category!`);
-                    }
-                    return res.send(documents);
-                }
-            }
-        ).clone();
+        const result = await Site.find({ mobileNum: req.user.mobileNum });
+        return res.json({ Sites: result });
     } catch (err) {
         return res.json({ message: err.message });
     }
@@ -103,6 +91,7 @@ const searchSector = async (req, res) => {
     }
 };
 
+//search function
 const search = async (req, res) => {
     try {
         let search = req.query.search || req.body.search;
@@ -120,4 +109,27 @@ const search = async (req, res) => {
     }
 };
 
-module.exports = { viewSite, addSite, searchSector, editSite, search };
+//Upload logo function
+const upload = multer({
+    // dest: "images",
+    limits: { fileSize: 1000000 },
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, "images");
+        },
+        filename: (req, file, cb) => {
+            const fileExtension = file.originalname.split(".").pop();
+            const fileNewName =
+                Date.now() + (0 | (Math.random() * 9e6)) + "." + fileExtension;
+            cb(null, fileNewName);
+        },
+    }),
+    fileFilter(req, file, callback) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return callback(new Error("Invalid Upload"));
+        }
+        callback(undefined, true);
+    },
+});
+
+module.exports = { viewSites, addSite, upload, searchSector, editSite, search };
