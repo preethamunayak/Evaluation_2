@@ -2,7 +2,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt"); //used to hash mPin
 const User = require("../models/user");
 const Token = require("../models/token");
-const otp = require("../middleware/otpgenerator");
+const speakeasy = require("speakeasy");
 const generateToken = require("../utils/generateToken");
 
 //function for the signup of user
@@ -61,26 +61,37 @@ const signIn = async (req, res) => {
 
 const sendOTP = async (req, res) => {
     try {
-        const Otp = otp.generateOTP();
-
-        await User.findOneAndUpdate(
-            { mobileNum: req.body.mobileNum },
-            { otp: Otp }
-        );
-        res.json({ message: "Your otp is " + Otp });
+        const secret = speakeasy.generateSecret({ length: 10 });
+        res.send({
+            OTP: speakeasy.totp({
+                secret: secret.base32,
+                encoding: "base32",
+                step: 60,
+            }),
+            secret: secret.base32,
+        });
     } catch (err) {
         res.json({ message: err.message });
     }
 };
 
-let verifyNum = async (req, res) => {
+let verifyNum = async (req, res, next) => {
     try {
-        const user = await User.findOne({ mobileNum: req.body.mobileNum });
-        if (user) {
-            if ((user.otp = req.body.otp)) {
-            }
+        const result = speakeasy.totp.verify({
+            secret: req.body.secret,
+            encoding: "base32",
+            token: req.body.OTP,
+            window: 0,
+            step: 60,
+        });
+        if (result) {
+            // res.send({
+            //     message: "Verified",
+            // });
+            next();
+        } else {
+            res.json({ message: "Verification unsuccessful" });
         }
-        res.json({ user });
     } catch (err) {
         res.json({ message: err.message });
     }
@@ -88,7 +99,13 @@ let verifyNum = async (req, res) => {
 //function to forgot password
 let forgotPass = async (req, res) => {
     try {
-        const result = await User.findOne({ mobileNum: req.user.mobileNum });
+        const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
+        const newmPin = await bcrypt.hash(req.body.mPin.toString(), salt);
+        await User.findOneAndUpdate(
+            { mobileNum: req.body.mobileNum },
+            { mPin: newmPin }
+        );
+        res.json({ message: "MPin changed successfully" });
     } catch (err) {
         res.json({ message: err.message });
     }
@@ -144,6 +161,7 @@ module.exports = {
     signUp,
     signIn,
     forgotPass,
+
     sendOTP,
     resetPass,
     logout,

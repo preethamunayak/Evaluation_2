@@ -47,9 +47,9 @@ router.post("/mySites/searchSite", authenticate, searchSector);
 
 router.get("/mySites/search", authenticate, search);
 
-router.post("/sendOTP", sendOTP);
+router.get("/sendOTP", sendOTP);
 
-router.post("/verify", verifyNum /*, forgotPass*/);
+router.post("/verify", verifyNum, forgotPass);
 
 router.patch("/resetPassword", authenticate, resetPass);
 
