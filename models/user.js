@@ -1,7 +1,6 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt"); //one way hasing of password
-const { string } = require("joi");
 
 //Pre defined schema for sites
 const userSchema = new mongoose.Schema({
@@ -27,8 +26,7 @@ const userSchema = new mongoose.Schema({
     },
 
     loggedIn: { type: Boolean, default: false, required: false },
-    otp: { type: String, required: false },
-    refToken: { type: String },
+    otp: { type: String, required: false, default: null },
 });
 
 userSchema.pre("save", async function (next) {
