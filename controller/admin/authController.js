@@ -1,6 +1,6 @@
 const user = require("../../models/user");
 const Site = require("../../models/user");
-
+const Token = require("../../models/token");
 const clearUserData = async (req, res) => {
     try {
         await user.deleteMany();
@@ -18,4 +18,12 @@ const clearUserSite = async (req, res) => {
     }
 };
 
-module.exports = { clearUserData, clearUserSite };
+const clearRefToken = async (req, res) => {
+    try {
+        await Token.deleteMany();
+        res.json({ message: "Deleted all refresh tokens" });
+    } catch (error) {
+        res.json({ error });
+    }
+};
+module.exports = { clearUserData, clearUserSite, clearRefToken };

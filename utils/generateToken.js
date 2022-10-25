@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Token = require("../models/token");
 
+//generating token function
 const generateToken = async (user) => {
     try {
         const accessToken = jwt.sign(
