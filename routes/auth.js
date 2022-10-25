@@ -18,12 +18,17 @@ const {
     search,
     upload,
 } = require("../controller/siteController");
+const { GetNewAccessToken } = require("../controller/refreshTokenController");
 
 //routes for different operations
 router.post("/signUp", signUp);
+
 router.post("/signIn", signIn);
+
 router.get("/mySites", authenticate, viewSites);
+
 router.post("/mySites/addSite", authenticate, addSite);
+
 router.post(
     "/mySites/upload/logo",
     authenticate,
@@ -35,12 +40,21 @@ router.post(
         res.status(400).json({ message: error.message });
     }
 );
+
 router.patch("/mySites/editSite", authenticate, editSite);
+
 router.post("/mySites/searchSite", authenticate, searchSector);
+
 router.get("/mySites/search", authenticate, search);
-// router.post("/sendOTP", sendOTP);
-router.post("/forgotPassword", verifyNum /*, forgotPass*/);
-router.post("/resetPassword", authenticate, resetPass);
-router.post("/logout", authenticate, logout);
+
+router.post("/sendOTP", sendOTP);
+
+router.post("/verify", verifyNum /*, forgotPass*/);
+
+router.patch("/resetPassword", authenticate, resetPass);
+
+router.get("/refreshToken", authenticate, GetNewAccessToken);
+
+router.delete("/logout", authenticate, logout);
 
 module.exports = router;

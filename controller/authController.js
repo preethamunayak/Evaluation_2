@@ -1,8 +1,9 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt"); //used to hash mPin
-const jwt = require("jsonwebtoken"); //used to create token during signup
 const User = require("../models/user");
+const Token = require("../models/token");
 const otp = require("../middleware/otpgenerator");
+const generateToken = require("../utils/generateToken");
 
 //function for the signup of user
 const signUp = async (req, res) => {
@@ -40,33 +41,13 @@ const signIn = async (req, res) => {
             );
 
             if (result) {
-                // if (
-                //     await User.findOne(
-                //         { mobileNum: req.body.mobileNum },
-                //         { loggedIn: true }
-                //     )
-                // ) {
-                //     res.json({ message: "You have already logged" });
-                // }
                 await User.findOneAndUpdate(
                     { mobileNum: req.body.mobileNum },
                     { loggedIn: true }
                 );
-                //created access token with expiry of 1day
-                const accessToken = jwt.sign(
-                    { mobileNum: user.mobileNum },
-                    process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: "1d" }
-                );
-                //created refresh token with expiry of 7days
-                const refreshToken = jwt.sign(
-                    { mobileNum: user.mobileNum },
-                    process.env.REFRESH_TOKEN_SECRET,
-                    { expiresIn: "7d" }
-                );
+                const token = await generateToken(user);
                 res.json({
-                    AccessToken: accessToken,
-                    // RefreshToken: refreshToken,
+                    access_token: token,
                     message: "Login successfull",
                 });
             } else {
@@ -81,10 +62,12 @@ const signIn = async (req, res) => {
 const sendOTP = async (req, res) => {
     try {
         const Otp = otp.generateOTP();
+
         await User.findOneAndUpdate(
             { mobileNum: req.body.mobileNum },
             { otp: Otp }
         );
+        res.json({ message: "Your otp is " + Otp });
     } catch (err) {
         res.json({ message: err.message });
     }
@@ -93,6 +76,10 @@ const sendOTP = async (req, res) => {
 let verifyNum = async (req, res) => {
     try {
         const user = await User.findOne({ mobileNum: req.body.mobileNum });
+        if (user) {
+            if ((user.otp = req.body.otp)) {
+            }
+        }
         res.json({ user });
     } catch (err) {
         res.json({ message: err.message });
@@ -101,23 +88,7 @@ let verifyNum = async (req, res) => {
 //function to forgot password
 let forgotPass = async (req, res) => {
     try {
-        const user = await User.findOne({ mobileNum: req.body.mobileNum });
-        if (!user) {
-            res.json({
-                message:
-                    "You do not have a registered account. Please Sign up.",
-            });
-        } else {
-            const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
-            const newPass = await bcrypt.hash(req.body.mPin.toString(), salt);
-            await User.findOneAndUpdate(
-                { mobileNum: req.body.mobileNum },
-                { mPin: newPass }
-            );
-            res.json({
-                message: "Password reset",
-            });
-        }
+        const result = await User.findOne({ mobileNum: req.user.mobileNum });
     } catch (err) {
         res.json({ message: err.message });
     }
@@ -125,15 +96,21 @@ let forgotPass = async (req, res) => {
 
 let resetPass = async (req, res) => {
     try {
-        const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
-        const newMpin = await bcrypt.hash(req.body.mPin.toString(), salt);
-        if (req.user.mPin == newMpin) {
+        const user = await User.findOne({ mobileNum: req.user.mobileNum });
+        const result = await bcrypt.compare(
+            req.body.mPin.toString(),
+            user.mPin
+        );
+
+        if (result) {
             res.json({ message: "Your new mPin cannot be same as old!" });
         } else {
-            await User.findOneAndUpdate({
-                mobileNum: req.user.mobileNum,
-                mPin: newMpin,
-            });
+            const salt = await bcrypt.genSalt(parseInt(process.env.SALT_VALUE));
+            const newmPin = await bcrypt.hash(req.body.mPin.toString(), salt);
+            await User.findOneAndUpdate(
+                { mobileNum: req.user.mobileNum },
+                { mPin: newmPin }
+            );
             res.json({ message: "MPin changed successfully" });
         }
     } catch (error) {
@@ -146,9 +123,20 @@ let logout = async (req, res) => {
             { mobileNum: req.body.mobileNum },
             { loggedIn: false }
         );
-        res.json({ message: "Logged out successfully" });
+        const userToken = await Token.findOne({
+            refreshToken: req.body.refreshToken,
+        }); // finding document with the matched refresh token
+        if (!userToken) {
+            return res.status(200).json({
+                error: false,
+                message: "You have logged out already!",
+            }); // if no user exists, by default return logged out
+        } else {
+            await userToken.remove();
+            res.json({ error: false, message: "Logged out successfully" });
+        }
     } catch (err) {
-        res.json({ message: err.message });
+        res.json({ error: true, message: err.message });
     }
 };
 

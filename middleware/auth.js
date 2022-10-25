@@ -9,7 +9,6 @@ function authenticate(req, res, next) {
         if (err) return res.status(401).send(err);
         req.user = user;
     });
-    console.log(req.user);
     next();
 }
 
