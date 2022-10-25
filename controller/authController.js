@@ -59,6 +59,7 @@ const signIn = async (req, res) => {
     }
 };
 
+//sending otp
 const sendOTP = async (req, res) => {
     try {
         const secret = speakeasy.generateSecret({ length: 10 });
@@ -75,6 +76,7 @@ const sendOTP = async (req, res) => {
     }
 };
 
+//verification of number using speakeasy
 let verifyNum = async (req, res, next) => {
     try {
         const result = speakeasy.totp.verify({
@@ -111,6 +113,7 @@ let forgotPass = async (req, res) => {
     }
 };
 
+//password reset when logged in
 let resetPass = async (req, res) => {
     try {
         const user = await User.findOne({ mobileNum: req.user.mobileNum });
@@ -134,6 +137,7 @@ let resetPass = async (req, res) => {
         res.json({ message: error });
     }
 };
+//logout function
 let logout = async (req, res) => {
     try {
         await User.findOneAndUpdate(

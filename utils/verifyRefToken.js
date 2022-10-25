@@ -1,6 +1,7 @@
 const Token = require("../models/token");
 const jwt = require("jsonwebtoken");
 
+//verifying token function
 const verifyRefToken = (refreshToken) => {
     const privateKey = process.env.REFRESH_TOKEN_SECRET;
 

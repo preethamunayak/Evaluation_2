@@ -6,6 +6,7 @@ const {
     clearRefToken,
 } = require("../../controller/admin/authController");
 
+//routes for admin purpose
 router.delete("/admin/clearUser", clearUserData);
 router.delete("/admin/clearSite", clearUserSite);
 router.delete("/admin/reftoken", clearRefToken);
