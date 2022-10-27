@@ -44,7 +44,7 @@ router.post(
 
 router.patch("/mySites/editSite", authenticate, editSite);
 
-router.delete("/mySites/removeSite", deleteSite);
+router.delete("/mySites/removeSite", authenticate, deleteSite);
 
 router.post("/mySites/searchSite", authenticate, searchSector);
 
@@ -56,7 +56,7 @@ router.post("/verify", verifyNum, forgotPass);
 
 router.patch("/resetPassword", authenticate, resetPass);
 
-router.get("/refreshToken", authenticate, GetNewAccessToken);
+router.get("/refreshToken", GetNewAccessToken);
 
 router.delete("/logout", authenticate, logout);
 

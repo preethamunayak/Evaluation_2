@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema({
     },
 
     loggedIn: { type: Boolean, default: false, required: false },
-    otp: { type: String, required: false },
 });
 
 userSchema.pre("save", async function (next) {

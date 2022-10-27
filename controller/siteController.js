@@ -70,12 +70,15 @@ const editSite = async (req, res) => {
 // function to delete Site
 const deleteSite = async (req, res) => {
     try {
-        const result = await Site.findById({ _id: req.body._id });
+        const result = await Site.findOne({
+            _id: req.body._id,
+            mobileNum: req.user.mobileNum,
+        });
         if (result) {
             await Site.deleteOne({ _id: req.body._id });
             res.json({ message: "Site Deletion successful" });
         } else {
-            res.json({ message: "No site found" });
+            res.json({ message: "No access to this site" });
         }
     } catch (err) {
         return res.json({ message: err.message });
