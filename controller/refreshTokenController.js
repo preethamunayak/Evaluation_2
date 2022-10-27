@@ -1,7 +1,7 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const verifyRefToken = require("../utils/verifyRefToken");
-
+//generating tokens
 exports.GetNewAccessToken = async (req, res) => {
     try {
         const result = await verifyRefToken(req.body.refreshToken).catch(

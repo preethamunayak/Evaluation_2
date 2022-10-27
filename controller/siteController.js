@@ -67,6 +67,20 @@ const editSite = async (req, res) => {
     }
 };
 
+// function to delete Site
+const deleteSite = async (req, res) => {
+    try {
+        const result = await Site.findById({ _id: req.body._id });
+        if (result) {
+            await Site.deleteOne({ _id: req.body._id });
+            res.json({ message: "Site Deletion successful" });
+        } else {
+            res.json({ message: "No site found" });
+        }
+    } catch (err) {
+        return res.json({ message: err.message });
+    }
+};
 // function to search Site using sector
 const searchSector = async (req, res) => {
     try {
@@ -132,4 +146,12 @@ const upload = multer({
     },
 });
 
-module.exports = { viewSites, addSite, upload, searchSector, editSite, search };
+module.exports = {
+    viewSites,
+    addSite,
+    upload,
+    searchSector,
+    deleteSite,
+    editSite,
+    search,
+};
