@@ -1,6 +1,8 @@
 const user = require("../../models/user");
 const Site = require("../../models/user");
 const Token = require("../../models/token");
+
+//routes for admin purpose
 const clearUserData = async (req, res) => {
     try {
         await user.deleteMany();

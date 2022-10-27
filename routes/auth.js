@@ -17,6 +17,7 @@ const {
     searchSector,
     search,
     upload,
+    deleteSite,
 } = require("../controller/siteController");
 const { GetNewAccessToken } = require("../controller/refreshTokenController");
 
@@ -42,6 +43,8 @@ router.post(
 );
 
 router.patch("/mySites/editSite", authenticate, editSite);
+
+router.delete("/mySites/removeSite", deleteSite);
 
 router.post("/mySites/searchSite", authenticate, searchSector);
 
